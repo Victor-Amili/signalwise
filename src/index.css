@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-deep: var(--deep);
+  --color-deepsoft: var(--deepsoft);
+}
+
+:root {
+  --background: #f8f7f3;
+  --foreground: #15202b;
+  --card: #ffffff;
+  --card-foreground: #15202b;
+  --primary: #0a766d;
+  --primary-foreground: #f2fffc;
+  --secondary: #e7f1ef;
+  --secondary-foreground: #165b56;
+  --muted: #eef0ed;
+  --muted-foreground: #64716f;
+  --accent: #e9c46a;
+  --accent-foreground: #342a14;
+  --destructive: #c94c4c;
+  --border: #dfe6e3;
+  --input: #dfe6e3;
+  --ring: #0a766d;
+  --deep: #143a3b;
+  --deepsoft: #a8d9d0;
+}
+
+.dark {
+  --background: #0b1313;
+  --foreground: #e6efec;
+  --card: #13201f;
+  --card-foreground: #e6efec;
+  --primary: #35b3a5;
+  --primary-foreground: #062622;
+  --secondary: #16302d;
+  --secondary-foreground: #a8d9d0;
+  --muted: #17211f;
+  --muted-foreground: #94a6a2;
+  --accent: #e9c46a;
+  --accent-foreground: #342a14;
+  --destructive: #e06c6c;
+  --border: #223331;
+  --input: #2c403d;
+  --ring: #35b3a5;
+  --deep: #102726;
+  --deepsoft: #a8d9d0;
+}
+
+* { border-color: var(--border); }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+::selection { background: #bfe6df; color: #123b37; }
+
+@keyframes float-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.animate-float-in { animation: float-in 420ms cubic-bezier(.23,1,.32,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
