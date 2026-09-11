@@ -3,17 +3,18 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, RotateCcw, ShieldCheck, XCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserData, saveUserData, useContent, type QuizResult } from "@/lib/store";
+import { saveUserData, useContent, useUserData, type QuizResult } from "@/lib/store";
 
 export default function Quiz() {
   const { id } = useParams();
-  const quizId = Number(id);
+  const quizId = id ?? "";
   const navigate = useNavigate();
   const { user } = useAuth();
   const { quizzes, lessons } = useContent();
   const quiz = quizzes.find((q) => q.id === quizId);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [result, setResult] = useState<QuizResult | null>(null);
+  const data = useUserData(user?.uid ?? null);
 
   if (!quiz) {
     return (
@@ -41,7 +42,7 @@ export default function Quiz() {
 
   const allAnswered = Object.keys(answers).length === quiz.questions.length;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const score = quiz.questions.filter((q, i) => answers[i] === q.correct).length;
     const res: QuizResult = {
       quizId: quiz.id, lessonId: quiz.lessonId, title: quiz.title,
@@ -49,9 +50,17 @@ export default function Quiz() {
       percentage: Math.round((score / quiz.questions.length) * 100),
       date: new Date().toISOString(),
     };
-    const data = getUserData(user.email);
-    saveUserData(user.email, { ...data, results: [res, ...data.results] });
-    setResult(res);
+    try {
+      await saveUserData(user.uid, {
+        ...data,
+        results: [res, ...data.results],
+      });
+      setResult(res);
+    } catch (error) {
+      console.error("Could not save quiz result:", error);
+      alert("Your score was calculated, but it could not be saved. Please try again.");
+      return;
+    }
     window.scrollTo({ top: 0 });
   };
 

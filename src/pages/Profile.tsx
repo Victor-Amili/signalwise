@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Award, BookOpen, CheckCircle2, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserData, useContent } from "@/lib/store";
+import { useContent, useUserData } from "@/lib/store";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -17,7 +17,7 @@ export default function Profile() {
     );
   }
 
-  const data = getUserData(user.email);
+  const data = useUserData(user.uid);
   const published = lessons.filter((l) => l.published);
   const avg = data.results.length ? Math.round(data.results.reduce((s, r) => s + r.percentage, 0) / data.results.length) : 0;
 

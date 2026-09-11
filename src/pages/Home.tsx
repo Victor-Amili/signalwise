@@ -1,8 +1,8 @@
 // src/pages/Home.tsx
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, ChevronRight, Clock3, LockKeyhole, ShieldCheck, Sparkles, Zap } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useContent } from "@/lib/store";
+import { useAuth } from "../contexts/AuthContext";
+import { useContent } from "../lib/store";
 
 const principles = [
   { icon: LockKeyhole, number: "01", title: "Pause and verify", copy: "Build a calm verification habit before you click, reply, or pay." },
