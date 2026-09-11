@@ -139,12 +139,40 @@ export async function addLesson(
     createdAt: new Date().toISOString(),
   });
 
+  // Automatically create a notice when a new topic is added.
+  await addNotice(
+    "New topic added",
+    `A new topic, "${input.title}", has been added to the learning library.`
+  );
+
   return docRef.id;
 }
 
 export async function updateLesson(id: string, patch: Partial<Lesson>) {
-  const { id: _id, ...safePatch } = patch as Partial<Lesson> & { id?: string };
-  await updateDoc(doc(db, "lessons", id), safePatch);
+  const lessonRef = doc(db, "lessons", id);
+
+  // Get the existing lesson so we can detect a draft → published change.
+  const existingSnapshot = await getDoc(lessonRef);
+
+  if (!existingSnapshot.exists()) {
+    throw new Error("Lesson not found.");
+  }
+
+  const existingLesson = existingSnapshot.data() as Lesson;
+
+  const { id: _id, ...safePatch } = patch as Partial<Lesson> & {
+    id?: string;
+  };
+
+  await updateDoc(lessonRef, safePatch);
+
+  // Notify users when an existing draft becomes published.
+  if (existingLesson.published === false && patch.published === true) {
+    await addNotice(
+      "New topic published",
+      `A new topic, "${patch.title ?? existingLesson.title}", is now available in the learning library.`
+    );
+  }
 }
 
 export async function deleteLesson(id: string) {
