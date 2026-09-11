@@ -1,54 +1,173 @@
 // src/lib/auth.ts
-export interface User { name: string; email: string; role: "admin" | "learner"; }
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  type User as FirebaseUser,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "./firebase";
 
-const USERS_KEY = "sw_users";
-const SESSION_KEY = "sw_session";
+export interface User {
+  uid: string;
+  name: string;
+  email: string;
+  role: "admin" | "learner";
+}
 
-interface StoredUser extends User { pass: string; }
+function friendlyError(error: unknown): string {
+  const code = (error as { code?: string })?.code ?? "";
 
-async function hash(pwd: string): Promise<string> {
-  if (crypto.subtle) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pwd));
-    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "An account with this email already exists.";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/weak-password":
+      return "Password must be at least 6 characters.";
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Incorrect email or password.";
+    case "auth/popup-closed-by-user":
+      return "Google sign-in was cancelled.";
+    case "auth/popup-blocked":
+      return "Your browser blocked the Google sign-in popup.";
+    default:
+      return "Something went wrong. Please try again.";
   }
-  return `plain:${pwd}`;
 }
 
-function readUsers(): StoredUser[] {
-  try { return JSON.parse(localStorage.getItem(USERS_KEY) ?? "[]"); } catch { return []; }
-}
-function writeUsers(users: StoredUser[]) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
+export async function getUserProfile(firebaseUser: FirebaseUser): Promise<User> {
+  const userRef = doc(db, "users", firebaseUser.uid);
+  const snapshot = await getDoc(userRef);
 
-// Seed the admin account once (demo credentials — change these)
-hash("admin123").then((h) => {
-  const users = readUsers();
-  if (!users.some((u) => u.email === "admin@signalwise.com")) {
-    users.push({ name: "Signalwise Admin", email: "admin@signalwise.com", pass: h, role: "admin" });
-    writeUsers(users);
+  if (snapshot.exists()) {
+    const data = snapshot.data();
+    return {
+      uid: firebaseUser.uid,
+      name: String(data.name ?? firebaseUser.displayName ?? "Learner"),
+      email: firebaseUser.email ?? "",
+      role: data.role === "admin" ? "admin" : "learner",
+    };
   }
-});
 
-export async function signup(name: string, email: string, password: string): Promise<{ ok: boolean; error?: string }> {
-  const users = readUsers();
-  if (users.some((u) => u.email.toLowerCase() === email.toLowerCase()))
-    return { ok: false, error: "An account with this email already exists." };
-  users.push({ name, email, pass: await hash(password), role: "learner" });
-  writeUsers(users);
-  return { ok: true };
+  const profile: User = {
+    uid: firebaseUser.uid,
+    name: firebaseUser.displayName ?? "Learner",
+    email: firebaseUser.email ?? "",
+    role: "learner",
+  };
+
+  await setDoc(userRef, {
+    name: profile.name,
+    email: profile.email,
+    role: profile.role,
+    createdAt: new Date().toISOString(),
+  });
+
+  return profile;
 }
 
-export async function login(email: string, password: string): Promise<{ ok: boolean; user?: User; error?: string }> {
-  const found = readUsers().find((u) => u.email.toLowerCase() === email.toLowerCase());
-  if (!found) return { ok: false, error: "No account found for that email." };
-  if (found.pass !== (await hash(password))) return { ok: false, error: "Incorrect password." };
-  const user: User = { name: found.name, email: found.email, role: found.role };
-  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  return { ok: true, user };
+export async function signup(
+  name: string,
+  email: string,
+  password: string
+): Promise<{ ok: boolean; user?: User; error?: string }> {
+  try {
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
+    const profile: User = {
+      uid: credential.user.uid,
+      name: name.trim(),
+      email: credential.user.email ?? email.trim(),
+      role: "learner",
+    };
+
+    await setDoc(doc(db, "users", credential.user.uid), {
+      name: profile.name,
+      email: profile.email,
+      role: profile.role,
+      createdAt: new Date().toISOString(),
+    });
+
+    return { ok: true, user: profile };
+  } catch (error) {
+    console.error("Signup failed:", error);
+    return { ok: false, error: friendlyError(error) };
+  }
 }
 
-export function getSession(): User | null {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null"); } catch { return null; }
+export async function login(
+  email: string,
+  password: string
+): Promise<{ ok: boolean; user?: User; error?: string }> {
+  try {
+    const credential = await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
+    const user = await getUserProfile(credential.user);
+    return { ok: true, user };
+  } catch (error) {
+    console.error("Login failed:", error);
+    return { ok: false, error: friendlyError(error) };
+  }
 }
-export function logout() { localStorage.removeItem(SESSION_KEY); }
+
+export async function loginWithGoogle(): Promise<{
+  ok: boolean;
+  user?: User;
+  error?: string;
+}> {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    const credential = await signInWithPopup(auth, provider);
+    const user = await getUserProfile(credential.user);
+
+    return { ok: true, user };
+  } catch (error) {
+    console.error("Google login failed:", error);
+    return { ok: false, error: friendlyError(error) };
+  }
+}
+
+export async function logout() {
+  await signOut(auth);
+}
+
+export function watchAuthState(
+  callback: (user: User | null) => void,
+  onError?: (error: unknown) => void
+) {
+  return onAuthStateChanged(
+    auth,
+    async (firebaseUser) => {
+      if (!firebaseUser) {
+        callback(null);
+        return;
+      }
+
+      try {
+        const user = await getUserProfile(firebaseUser);
+        callback(user);
+      } catch (error) {
+        console.error("Could not load user profile:", error);
+        onError?.(error);
+        callback(null);
+      }
+    },
+    onError
+  );
+}
