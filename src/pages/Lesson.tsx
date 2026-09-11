@@ -1,18 +1,18 @@
 // src/pages/Lesson.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Sparkles } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { getUserData, saveUserData, useContent } from "@/lib/store";
+import { useAuth } from "../contexts/AuthContext";
+import { saveUserData, useContent, useUserData } from "../lib/store";
 
 export default function Lesson() {
   const { id } = useParams();
-  const lessonId = Number(id);
+  const lessonId = id ?? "";
   const navigate = useNavigate();
   const { user } = useAuth();
   const { lessons, tips, quizzes } = useContent();
   const lesson = lessons.find((l) => l.id === lessonId && l.published);
-  const [data, setData] = useState(user ? getUserData(user.email) : null);
+  const data = useUserData(user?.uid ?? null);
 
   if (!lesson) {
     return (
@@ -28,11 +28,20 @@ export default function Lesson() {
   const lessonTips = tips.filter((t) => t.lessonId === lesson.id);
   const completed = data?.completed.includes(lesson.id) ?? false;
 
-  const markComplete = () => {
-    if (!user || !data) return navigate("/auth");
-    const next = { ...data, completed: completed ? data.completed.filter((c) => c !== lesson.id) : [...data.completed, lesson.id] };
-    saveUserData(user.email, next);
-    setData(next);
+  const markComplete = async () => {
+    if (!user) return navigate("/auth");
+    const next = {
+      ...data,
+      completed: completed
+        ? data.completed.filter((c) => c !== lesson.id)
+        : [...data.completed, lesson.id],
+    };
+    try {
+      await saveUserData(user.uid, next);
+    } catch (error) {
+      console.error("Could not save completion:", error);
+      alert("Could not save your progress. Please try again.");
+    }
   };
 
   return (

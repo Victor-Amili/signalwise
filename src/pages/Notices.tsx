@@ -1,17 +1,26 @@
 // src/pages/Notices.tsx
 import { Megaphone } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { getUserData, saveUserData, useContent } from "@/lib/store";
+import { useAuth } from "../contexts/AuthContext";
+import { saveUserData, useContent, useUserData } from "../lib/store";
 
 export default function Notices() {
   const { user } = useAuth();
   const { notices } = useContent();
-  const read = user ? getUserData(user.email).readNotices : [];
+  const data = useUserData(user?.uid ?? null);
+  const read = data.readNotices;
 
-  const open = (id: number) => {
+  const open = async (id: string) => {
     if (!user) return;
-    const data = getUserData(user.email);
-    if (!data.readNotices.includes(id)) saveUserData(user.email, { ...data, readNotices: [...data.readNotices, id] });
+    if (data.readNotices.includes(id)) return;
+
+    try {
+      await saveUserData(user.uid, {
+        ...data,
+        readNotices: [...data.readNotices, id],
+      });
+    } catch (error) {
+      console.error("Could not save notice state:", error);
+    }
   };
 
   return (
