@@ -5,6 +5,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   updateDoc,
@@ -14,6 +15,8 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Lesson, Notice, Quiz, Tip } from "../data/seed";
+
+export type { Lesson, Notice, Quiz, Tip };
 
 export interface Content {
   lessons: Lesson[];

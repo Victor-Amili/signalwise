@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, RotateCcw, ShieldCheck, XCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { saveUserData, useContent, useUserData, type QuizResult } from "@/lib/store";
+import { useAuth } from "../contexts/AuthContext";
+import { saveUserData, useContent, useUserData, type QuizResult } from "../lib/store";
 
 export default function Quiz() {
   const { id } = useParams();

@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, CheckCircle2, Clock3, Search, ShieldAlert, Sparkles } from "lucide-react";
-import { useContent } from "@/lib/store";
+import { useContent } from "../lib/store";
 
 export default function Learn() {
   const { lessons, tips } = useContent();

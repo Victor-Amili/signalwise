@@ -1,8 +1,8 @@
 // src/pages/Profile.tsx
 import { Link } from "react-router-dom";
 import { ArrowRight, Award, BookOpen, CheckCircle2, LogOut, ShieldCheck } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useContent, useUserData } from "@/lib/store";
+import { useAuth } from "../contexts/AuthContext";
+import { useContent, useUserData } from "../lib/store";
 
 export default function Profile() {
   const { user, logout } = useAuth();
