@@ -1,11 +1,11 @@
-export interface Lesson { id: number; slug: string; title: string; category: string; summary: string; content: string; estimatedMinutes: number; published: boolean; }
-export interface Tip { id: number; lessonId: number; title: string; body: string; }
+export interface Lesson { id: string; slug: string; title: string; category: string; summary: string; content: string; estimatedMinutes: number; published: boolean; }
+export interface Tip { id: string; lessonId: string; title: string; body: string; }
 export interface QuizQuestion { prompt: string; explanation: string; options: string[]; correct: number; }
-export interface Quiz { id: number; lessonId: number; title: string; description: string; questions: QuizQuestion[]; }
-export interface Notice { id: number; title: string; body: string; createdAt: string; }
+export interface Quiz { id: string; lessonId: string; title: string; description: string; questions: QuizQuestion[]; }
+export interface Notice { id: string; title: string; body: string; createdAt: string; }
 
 const L = (id: number, slug: string, category: string, title: string, summary: string, content: string, minutes: number): Lesson =>
-  ({ id, slug, category, title, summary, content, estimatedMinutes: minutes, published: true });
+  ({ id: String(id), slug, category, title, summary, content, estimatedMinutes: minutes, published: true });
 
 export const seedLessons: Lesson[] = [
   L(1, "phishing-and-social-engineering", "Phishing & social engineering", "Spot phishing before it spots you",
@@ -32,17 +32,17 @@ export const seedLessons: Lesson[] = [
 ];
 
 export const seedTips: Tip[] = [
-  { id: 1, lessonId: 1, title: "Pause before you click", body: "Urgency is a common manipulation tactic. Verify unexpected requests through a trusted channel." },
-  { id: 2, lessonId: 2, title: "Use a password manager", body: "Unique passwords reduce the damage caused when one service is breached." },
-  { id: 3, lessonId: 3, title: "Update promptly", body: "Security updates often fix weaknesses that attackers already know how to exploit." },
-  { id: 4, lessonId: 4, title: "Share less by default", body: "Review privacy settings and avoid publishing information that reveals your routines." },
-  { id: 5, lessonId: 5, title: "Verify the person, not just the profile", body: "A familiar name or photo does not prove that an account is genuine." },
-  { id: 6, lessonId: 6, title: "Back up important files", body: "A separate backup gives you a safer recovery option after device loss or ransomware." },
-  { id: 7, lessonId: 7, title: "Protect one-time codes", body: "Treat authentication codes as private. Support staff should not ask you to read them aloud." },
+  { id: "1", lessonId: "1", title: "Pause before you click", body: "Urgency is a common manipulation tactic. Verify unexpected requests through a trusted channel." },
+  { id: "2", lessonId: "2", title: "Use a password manager", body: "Unique passwords reduce the damage caused when one service is breached." },
+  { id: "3", lessonId: "3", title: "Update promptly", body: "Security updates often fix weaknesses that attackers already know how to exploit." },
+  { id: "4", lessonId: "4", title: "Share less by default", body: "Review privacy settings and avoid publishing information that reveals your routines." },
+  { id: "5", lessonId: "5", title: "Verify the person, not just the profile", body: "A familiar name or photo does not prove that an account is genuine." },
+  { id: "6", lessonId: "6", title: "Back up important files", body: "A separate backup gives you a safer recovery option after device loss or ransomware." },
+  { id: "7", lessonId: "7", title: "Protect one-time codes", body: "Treat authentication codes as private. Support staff should not ask you to read them aloud." },
 ];
 
 const Q = (id: number, lessonId: number, title: string, description: string, questions: QuizQuestion[]): Quiz =>
-  ({ id, lessonId, title, description, questions });
+  ({ id: String(id), lessonId: String(lessonId), title, description, questions });
 
 export const seedQuizzes: Quiz[] = [
   Q(1, 1, "Phishing signals check", "Test your ability to recognise common manipulation patterns.", [
@@ -83,8 +83,8 @@ export const seedQuizzes: Quiz[] = [
 ];
 
 export const seedNotices: Notice[] = [
-  { id: 1, title: "Welcome to Signalwise", body: "Browse the library, complete a module, and try your first signal check quiz. Your progress is saved to your account.", createdAt: new Date().toISOString() },
-  { id: 2, title: "New topics arriving soon", body: "We are expanding the library with modules on mobile security and safe online shopping.", createdAt: new Date().toISOString() },
+  { id: "1", title: "Welcome to Signalwise", body: "Browse the library, complete a module, and try your first signal check quiz. Your progress is saved to your account.", createdAt: new Date().toISOString() },
+  { id: "2", title: "New topics arriving soon", body: "We are expanding the library with modules on mobile security and safe online shopping.", createdAt: new Date().toISOString() },
 ];
 
 export const seedContent = { lessons: seedLessons, tips: seedTips, quizzes: seedQuizzes, notices: seedNotices };

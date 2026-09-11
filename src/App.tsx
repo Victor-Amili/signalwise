@@ -13,7 +13,12 @@ import Profile from "./pages/Profile";
 import Quiz from "./pages/Quiz";
 
 function AdminRoute() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="mx-auto max-w-3xl px-5 py-20 text-center text-sm text-muted-foreground">Loading…</div>;
+  }
+
   if (!user) return <Navigate to="/auth" replace />;
   if (user.role !== "admin") return <Navigate to="/learn" replace />;
   return <Admin />;

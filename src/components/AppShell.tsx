@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { BookOpen, Bell, LogOut, Menu, Moon, ShieldCheck, Sun, X } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useContent } from "@/lib/store";
-import { getUserData } from "@/lib/store";
+import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
+import { useContent } from "../lib/store";
+import { useUserData } from "../lib/store";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { notices } = useContent();
+  const data = useUserData(user?.uid ?? null);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const unread = user ? notices.filter((n) => !getUserData(user.email).readNotices.includes(n.id)).length : 0;
+  const unread = user ? notices.filter((n) => !data.readNotices.includes(n.id)).length : 0;
 
   const linkCls = ({ isActive }: { isActive: boolean }) =>
     `rounded-full px-4 py-2 text-sm font-medium transition-colors ${isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:text-primary"}`;
